@@ -12,7 +12,7 @@ is verified using [Frama-C](https://frama-c.com/) and embedded in a
 We use the [Meson build system](https://mesonbuild.com/) to build and
 install this project.
 
-The easiest way to all of the dependencies from
+The easiest way to install all of the dependencies from
 [conda-forge](https://conda-forge.org/) is to use the
 [micromamba](https://github.com/mamba-org/mamba#micromamba) package
 management tool.
@@ -21,12 +21,6 @@ Once you have `micromamba` installed type:
 
 ```
 micromamba install -c conda-forge xtl nlohmann_json cppzmq xeus meson
-```
-
-If you also want to use jupyter-lab then type:
-
-```
-micromamba install -c conda-forge jupyterlab
 ```
 
 Then clone this project:
@@ -43,6 +37,21 @@ cd build
 ninja -j$(nproc)
 ninja install
 ```
+## Using Jupyter-lab
+
+If you also want to use jupyter-lab then type:
+
+```
+micromamba install -c conda-forge jupyterlab
+```
+
+and then to start jupyter type:
+
+```
+jupyter-lab --port=<<port>> --ip=<<interface>> \
+  --no-browser --notebook-dir=<<pathToNotebooks>>
+```
+
 ## License
 
 This project is Licensed using the Apache 2.0 License (see the
