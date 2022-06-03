@@ -20,7 +20,13 @@ management tool.
 Once you have `micromamba` installed type:
 
 ```
-micromamba install -c conda-forge xeus jupyterlab meson
+micromamba install -c conda-forge xtl nlohmann_json cppzmq xeus meson
+```
+
+If you also want to use jupyter-lab then type:
+
+```
+micromamba install -c conda-forge jupyterlab
 ```
 
 Then clone this project:
