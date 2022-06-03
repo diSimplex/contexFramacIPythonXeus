@@ -7,6 +7,36 @@ is verified using [Frama-C](https://frama-c.com/) and embedded in a
 [Jupytper](https://jupyter.org/)/[IPthon kernel](https://ipython.org/)
 ([Xeus](https://github.com/jupyter-xeus/xeus)).
 
+## Building
+
+We use the [Meson build system](https://mesonbuild.com/) to build and
+install this project.
+
+The easiest way to all of the dependencies from
+[conda-forge](https://conda-forge.org/) is to use the
+[micromamba](https://github.com/mamba-org/mamba#micromamba) package
+management tool.
+
+Once you have `micromamba` installed type:
+
+```
+micromamba install -c conda-forge xeus jupyterlab meson
+```
+
+Then clone this project:
+
+```
+git clone https://github.com/diSimplex/contexFramacIPythonXeus.git
+```
+
+Then in the contexFramacIPythonXeus directory type:
+
+```
+meson setup --prefix=$CONDA_PREFIX build
+cd build
+ninja -j$(nproc)
+ninja install
+```
 ## License
 
 This project is Licensed using the Apache 2.0 License (see the
