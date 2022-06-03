@@ -1,0 +1,47 @@
+The code in this project is based upon heavily refactored code (and
+Jupyter notebooks) taken from the original
+[xeus-calc](https://github.com/jupyter-xeus/xeus-calc) project on
+2022-06-03 at commit `1a6247de0751cd70e805c758160ae5f04fb343b6`.
+
+The original files were:
+
+- `src/main.cpp`
+- `src/xeus_calc_interpreter.cpp`
+- `include/xeus-calc/xeus_calc_config.hpp`
+- `include/xeus-calc/xeus_calc_interpreter.hpp`
+- `share/jupyter/kernels/xcalc/kernel.json.in`
+- `notebooks/Xeus-calc.ipynb`
+
+They are being used via the following (origianl license):
+
+---------------------------------------------------------------------------
+
+BSD 3-Clause License
+
+Copyright (c) 2019, QuantStack
+All rights reserved.
+
+Redistribution and use in source and binary forms, with or without
+modification, are permitted provided that the following conditions are met:
+
+1. Redistributions of source code must retain the above copyright notice, this
+   list of conditions and the following disclaimer.
+
+2. Redistributions in binary form must reproduce the above copyright notice,
+   this list of conditions and the following disclaimer in the documentation
+   and/or other materials provided with the distribution.
+
+3. Neither the name of the copyright holder nor the names of its
+   contributors may be used to endorse or promote products derived from
+   this software without specific prior written permission.
+
+THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE
+FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
+DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
+SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
+CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
+OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
+OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
