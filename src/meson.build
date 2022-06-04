@@ -5,7 +5,7 @@ prefixInc = prefix / 'include'
 prefixLib = prefix / 'lib'
 
 conda = declare_dependency(
-	include_directories: prefixInc,
+	include_directories: [ '..'/ 'include', prefixInc ],
 )
 
 deps = [
