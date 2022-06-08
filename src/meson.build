@@ -1,4 +1,5 @@
 cppComp = meson.get_compiler('cpp')
+ccComp  = meson.get_compiler('c')
 
 prefix    = get_option('prefix')
 prefixInc = prefix / 'include'
@@ -17,6 +18,8 @@ deps = [
 libxcalc = library(
 	'libxeus-calc',
 	'xeus_calc_interpreter.cpp',
+	'old_calc.cpp',
+	'calc.c',
 	dependencies: deps,
 	install: true
 )
