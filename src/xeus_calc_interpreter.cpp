@@ -16,7 +16,7 @@
 #include "xeus/xinterpreter.hpp"
 
 #include "xeus-calc/xeus_calc_interpreter.hpp"
-#include "xeus-calc/old_calc.hpp"
+#include "xeus-calc/calc.h"
 
 namespace xeus_calc
 {
@@ -48,8 +48,16 @@ namespace xeus_calc
         };
         try
         {
-            std::string spaced_code = formating_expr(code);
-            result += std::to_string(compute_rpn(parse_rpn(spaced_code, publish), publish));
+            char* spaced_exp = NULL;
+            char* errMsg     = NULL;
+            if (spaced_expr(code.c_str(), &spaced_exp, &errMsg)) {
+              if (spaced_exp) free(spaced_exp);
+              if (!errMsg) errMsg = strdup("Unknown error from spaced_expr");
+            	throw std::runtime_error(errMsg);
+            }
+            std::string spaced_code = spaced_exp;
+            std::string parsedRPN = parse_rpn(spaced_code, publish);
+            result += std::to_string(compute_rpn(parsedRPN, publish));
             pub_data["text/plain"] = result;
             publish_execution_result(execution_counter, std::move(pub_data), nl::json::object());
             nl::json jresult;
