@@ -14,7 +14,7 @@ extern "C" {
 #define TOKEN_OP  1
 #define TOKEN_VAL 2
 
-extern char operators[];
+extern char *operators;
 
 typedef struct tokenObjStruct {
   int                    type;

@@ -5,11 +5,11 @@
 
 #include "xeus-calc/token.h"
 
-char operators[]  = "-+/*^()";
-int  precedence[] = {10, 10, 20, 20, 30, 40, 40};
+char *operators    = "-+/*^()";
+int   precedence[] = {10, 10, 20, 20, 30, 40, 40};
 
 TokenObj *newTokenObj(const char* theToken, size_t tokenLen, int tokenType) {
-  TokenObj *newTObj = calloc(sizeof(TokenObj), 1);
+  TokenObj *newTObj = (TokenObj*)calloc(sizeof(TokenObj), 1);
   newTObj->token    = strndup(theToken, tokenLen);
   newTObj->len      = tokenLen;
   newTObj->type     = tokenType;
@@ -27,9 +27,17 @@ void updatePrecedence(TokenObj *aToken) {
   aToken->precedence = precedence[index];
 }
 
+/*@
+  requires \valid(pubList);
+  ensures \valid(\result);
+ */
 char *publishPubList(TokenObj *pubList) {
 	size_t pubListLen = 10;
 	TokenObj *nextPubItem = pubList;
+	/*
+	  loop assigns nextPutItem;
+	  loop assigns pubListLen;
+	 */
 	while (nextPubItem) {
 		pubListLen += strlen(nextPubItem->token);
 		nextPubItem = nextPubItem->next;
@@ -39,6 +47,7 @@ char *publishPubList(TokenObj *pubList) {
 	nextPubItem = pubList;
   while (nextPubItem)	{
   	strcat(result, nextPubItem->token);
+		nextPubItem = nextPubItem->next;
   }
 
   return result;
@@ -55,7 +64,7 @@ void freeThisTokenObj(TokenObj *aToken) {
   aToken->precedence = 0;
 	aToken->value      = 0;
 
-  free(aToken);
+  free((void*)aToken);
 }
 
 void freeAllTokenObjs(TokenObj *aToken) {
