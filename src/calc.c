@@ -2,168 +2,211 @@
 #include <string.h>
 #include <ctype.h>
 #include <stdlib.h>
-char operators[] = "-+/*^()";
+#include <stdio.h>
+#include <math.h>
 
-// at the moment this interpreter is architected to pass strings between
-// stages.... we will re-architect this to pass a linked list of tokens.
+#include "xeus-calc/token.h"
 
-// we return non-zero if there was an error...
-// the spaced_expression if non-NULL should be free'd by the receiver.
-// the errMsg if non-NULL should be free'd by the receiver.
-//
-int spaced_expr(
-  const char* exp,
-  char** spaced_expression,
-  char** errMsg
+TokenObj *tokenized(
+  const char  *exp,
+  char       **errMsg
 ) {
   size_t expLen = strlen(exp);
-  if (*errMsg) free(*errMsg);
-  *errMsg = NULL;
-  if (*spaced_expression) free(*spaced_expression);
-  *spaced_expression = calloc(expLen*3, sizeof(char));
-  char* spacedExp = *spaced_expression;
-  const char* expEnd = exp + expLen;
-  const char* lastItr = NULL;
+  const char *expEnd       = exp + expLen;
+  const char *lastItr      = NULL;
+  const char *lastValue    = NULL;
+  size_t      lastValueLen = 0;
+  TokenObj   *tListRoot    = newTokenObj("", 0, TOKEN_NIL);
+  TokenObj   *tList        = tListRoot;
+
   for (const char* itr = exp; itr < expEnd ; lastItr = itr, itr++ ) {
     char* op = strchr(operators, *itr);
+
+    if (op || *itr == ' ') {
+      if (lastValue && (0 < lastValueLen) ) {
+        tList->next = newTokenObj(lastValue, lastValueLen, TOKEN_VAL);
+        tList       = tList->next;
+      }
+      lastValue    = NULL;
+      lastValueLen = 0;
+    }
+
     if (op) {
-      *spacedExp =  ' '; spacedExp++;
-      *spacedExp = *itr; spacedExp++;
-      *spacedExp =  ' '; spacedExp++;
+      tList->next = newTokenObj(itr, 1, TOKEN_OP);
+      updatePrecedence(tList->next);
+      tList       = tList->next;
     } else if (isdigit(*itr) ||
       (lastItr && isdigit(*lastItr) && *itr == '.')) {
-      *spacedExp = *itr; spacedExp++;
+      if (!lastValue) lastValue = itr;
+      lastValueLen++;
     } else if (*itr == ' ') {
       continue;
     } else {
       char* anErrMsg = strdup("Syntax error :\none of the characters presents an issue : [ ]");
       anErrMsg[strlen(anErrMsg) - 2] = *itr;
       *errMsg = anErrMsg;
-      if (*spaced_expression) free(*spaced_expression);
-      *spaced_expression = NULL;
-      return 1;
+      return NULL;
     }
   }
-  return 0;
-}
-
-////////////////////////////////////////////////////////////////////////
-
-char[] precedenceOps  = "+-*/^";
-int[]  precedenceVals = {0, 0, 10, 10, 20};
-
-std::string parse_rpn(
-  const std::string& formated_expression,
-  publish_type publish
-) {
-  std::stringstream input(formated_expression);
-  std::string token;
-  std::stringstream output_queue;
-  std::stack<std::string> operators_stack;
-  static precedence_map_type precedence_map = build_precedence_map();
-  int parenthesis_counter = 0;
-  while (input >> token) {
-    char first_token_char = token[0];
-    auto it = precedence_map.find(token);
-    if (std::isdigit(first_token_char)) {
-      output_queue << token << ' ';
-    } else if (it != precedence_map.end()) {
-      while (!operators_stack.empty() && operators_stack.top() != "(") {
-        auto stack_it = precedence_map.find(operators_stack.top());
-        if (stack_it->second >= it->second) {
-          output_queue << operators_stack.top() << ' ';
-          operators_stack.pop();
-        } else {
-          break;
-        }
-      }
-      operators_stack.push(token);
-    } else if (first_token_char == '(') {
-      operators_stack.push(token);
-      ++parenthesis_counter;
-    } else if (first_token_char == ')') {
-      while (!operators_stack.empty() && operators_stack.top() != "(") {
-        output_queue << operators_stack.top() << ' ';
-        operators_stack.pop();
-      }
-      if (operators_stack.empty()) {
-        throw std::runtime_error("Syntax error:\nmissing or misplaced parenthesis");
-      } else {
-        --parenthesis_counter;
-        operators_stack.pop();
-      }
-    }
-  }
-  while (!operators_stack.empty()) {
-    if (parenthesis_counter == 0) {
-      output_queue << operators_stack.top() << ' ';
-      operators_stack.pop();
-    } else {
-      throw std::runtime_error("Syntax error:\nmissing or misplaced parenthesis");
-    }
-  }
-  std::string result = "RPN = ";
-  result += output_queue.str();
-  publish("stdout", result);
-  return output_queue.str();
+  TokenObj *result = tListRoot->next;
+  freeThisTokenObj(tListRoot);
+  return result;
 }
 
 /////////////////////////////////////////////////////////////////////
 
-using operators_map_type = std::map<std::string, std::function<double(double first_argument, double second_argument)>>;
+#define publish(...)                         \
+  snprintf(publishBuffer, 250, __VA_ARGS__); \
+  pubList->next = newTokenObj(               \
+    strdup(publishBuffer),                   \
+    strlen(publishBuffer),                   \
+    TOKEN_NIL                                \
+  );                                         \
+  pubList       = pubList->next;
 
-operators_map_type build_operators_map()
-{
-    operators_map_type operators_map;
-    operators_map["+"] = std::plus<double>();
-    operators_map["-"] = std::minus<double>();
-    operators_map["*"] = std::multiplies<double>();
-    operators_map["/"] = std::divides<double>();
-    operators_map["^"] = [](double first_argument, double second_argument) {
-        return std::pow(first_argument, second_argument);
-    };
+////////////////////////////////////////////////////////////////////////
 
-    return operators_map;
-}
-
-double compute_rpn(
-  const std::string& rpn_expression,
-  publish_type publish
+TokenObj *parsedRPN(
+  TokenObj  *expTokens,
+  TokenObj **pubListOut,
+  char     **errMsg
 ) {
-  publish("stdout", "\nInput\tOperation\tStack after\n");
-  std::istringstream input(rpn_expression);
-  std::vector<double> evaluation;
-  std::string token;
-  // the map is initialized only once
-  static operators_map_type operators_map = build_operators_map();
-  while (input >> token) {
-    publish("stdout", token + "\t");
-    double token_num;
-    if (std::istringstream(token) >> token_num) {
-      publish("stdout", "Push\t\t");
-      evaluation.push_back(token_num);
-    } else {
-      // if less than 2 entries in the stack -> missing operand
-      if (evaluation.size() >= 2) {
-        publish("stdout", "Operate\t\t");
-        auto it = operators_map.find(token);
-        if (it != operators_map.end()) {
-          double second_argument = evaluation.back();
-          evaluation.pop_back();
-          double first_argument = evaluation.back();
-          evaluation.pop_back();
-          evaluation.push_back((it->second)(first_argument, second_argument));
-        } else {
-          throw std::runtime_error("\nSyntax error:\noperator or function not recognized");
-        }
+  char publishBuffer[260];
+  if (*pubListOut) freeAllTokenObjs(*pubListOut);
+  *pubListOut = NULL;
+
+  TokenObj *pubListRoot = newTokenObj("", 0, TOKEN_NIL);
+  TokenObj *pubList = pubListRoot;
+  publish("RPN = ");
+
+  int numParenthesis    = 0;
+  TokenObj *rpnListRoot = newTokenObj("", 0, TOKEN_NIL);
+  TokenObj *rpnList     = rpnListRoot;
+  TokenObj *opListRoot  = NULL;
+
+  if (!expTokens) return NULL;
+
+  TokenObj *nextToken   = expTokens->next;
+
+  while (nextToken) {
+
+    if (nextToken->type == TOKEN_VAL) {
+      publish("%s ", nextToken->token);
+      rpnList->next = nextToken;
+      rpnList       = rpnList->next;
+      nextToken     = nextToken->next;
+    } else if (nextToken->type == TOKEN_OP) {
+      if (opListRoot->precedence < nextToken->precedence) {
+        TokenObj *nextNextToken = nextToken->next;
+        nextToken->next         = opListRoot;
+        opListRoot              = nextToken;
+        nextToken               = nextNextToken;
       } else {
-        throw std::runtime_error("\nSyntax error:\nmissing operand");
+        while(opListRoot) {
+          if (strcmp(opListRoot->token, "(") != 0) {
+            opListRoot = opListRoot->next;
+            numParenthesis++;
+          } else if (strcmp(opListRoot->token, ")") != 0) {
+            numParenthesis--;
+            if (numParenthesis < 0) {
+            	*errMsg = strdup("Syntax error:\nmissing or misplaced parenthesis (too few opening '(' found)");
+            	return NULL;
+            }
+          } else {
+            publish("%s ", opListRoot->token);
+        	  rpnList->next = opListRoot;
+        	  rpnList       = rpnList->next;
+        	  opListRoot    = opListRoot->next;
+        	}
+        }
+        opListRoot = nextToken;
+        nextToken  = nextToken->next;
       }
     }
-    std::stringstream result;
-    std::copy(evaluation.begin(), evaluation.end(), std::ostream_iterator<double>(result, " "));
-    publish("stdout", result.str() + "\n");
   }
-  return evaluation.back();
+
+  if (opListRoot) {
+  	*errMsg = strdup("Syntax error:\nmissing or misplaced parenthesis (no closing ')' found)");
+   	return NULL;
+  }
+
+  TokenObj *result = rpnListRoot->next;
+  freeThisTokenObj(rpnListRoot);
+  *pubListOut = pubListRoot;
+  return result;
 }
 
+/////////////////////////////////////////////////////////////////////
+
+#define popTo(aVal) {                      \
+  if (0 < dataLen) {                       \
+	  dataLen--;                             \
+	  aVal = dataStack[dataLen];             \
+	} else {                                 \
+		*errMsg = strdup("Empty data stack!"); \
+		return 0;                              \
+	}                                        \
+}
+
+#define pushFrom(aVal) {                      \
+  if (dataLen < 250) {                        \
+  	dataStack[dataLen] = aVal;                \
+   dataLen++;                                 \
+  } else {                                    \
+   *errMsg = strdup("Data stack too small!"); \
+   return 0;                                  \
+  }                                           \
+}
+
+double interpretedRPN(
+  TokenObj  *rpnTokens,
+  TokenObj **pubListOut,
+  char     **errMsg
+) {
+  char publishBuffer[260];
+  if (*pubListOut) freeAllTokenObjs(*pubListOut);
+  *pubListOut = NULL;
+
+  TokenObj *pubListRoot = newTokenObj("", 0, TOKEN_NIL);
+  TokenObj *pubList = pubListRoot;
+  publish("\nInput\tOperation\tStack after\n")
+
+  double dataStack[250];
+  int    dataLen = 0;
+
+  TokenObj *nextToken = rpnTokens;
+
+  while (nextToken) {
+    publish("%s\t", nextToken->token);
+    if (nextToken->type == TOKEN_VAL) {
+      publish("Push\t\t");
+      pushFrom(nextToken->value);
+      TokenObj *oldToken = nextToken;
+    	nextToken          = nextToken->next;
+    	freeThisTokenObj(oldToken);
+    } else if (nextToken->type == TOKEN_OP) {
+      double rhs;
+      popTo(rhs);
+      double lhs;
+      popTo(lhs);
+      publish("Operate\t\t")
+      switch(*(nextToken->token)) {
+    	  case '+' : pushFrom(lhs+rhs); break;
+    	  case '-' : pushFrom(lhs-rhs); break;
+    	  case '*' : pushFrom(lhs*rhs); break;
+    	  case '/' : pushFrom(lhs/rhs); break;
+        case '^' : pushFrom(pow(lhs,rhs)); break;
+        default  :
+          *errMsg = strdup("Unknown operator!");
+          return 0;
+      }
+    }
+    publish("%f\n", dataStack[dataLen-1]);
+  }
+  if (dataLen != 1) {
+    *errMsg = strdup("Unbalanced RPN expression!");
+    return 0;
+  }
+  *pubListOut = pubListRoot;
+  return dataStack[0];
+}

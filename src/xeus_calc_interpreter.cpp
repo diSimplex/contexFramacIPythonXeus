@@ -43,21 +43,34 @@ namespace xeus_calc
 
         nl::json pub_data;
         std::string result = "Result = ";
-        auto publish = [this](const std::string& name, const std::string& text) {
-            this->publish_stream(name, text);
-        };
         try
         {
-            char* spaced_exp = NULL;
-            char* errMsg     = NULL;
-            if (spaced_expr(code.c_str(), &spaced_exp, &errMsg)) {
-              if (spaced_exp) free(spaced_exp);
-              if (!errMsg) errMsg = strdup("Unknown error from spaced_expr");
+            char     *errMsg    = NULL;
+            TokenObj *tokenList = tokenized(code.c_str(), &errMsg);
+            if (!tokenList) {
+              if (!errMsg) errMsg = strdup("Unknown error from tokenizer");
             	throw std::runtime_error(errMsg);
             }
-            std::string spaced_code = spaced_exp;
-            std::string parsedRPN = parse_rpn(spaced_code, publish);
-            result += std::to_string(compute_rpn(parsedRPN, publish));
+            TokenObj *pubList = NULL;
+                      errMsg  = NULL;
+            TokenObj *rpnList = parsedRPN(tokenList, &pubList, &errMsg);
+            if (!rpnList) {
+              if (!errMsg) errMsg = strdup("Unknown error from parse RPN");
+            	throw std::runtime_error(errMsg);
+            }
+            char *pubStr = publishPubList(pubList);
+            this->publish_stream("stdout", pubStr);
+            if (pubStr) free(pubStr);
+            freeAllTokenObjs(pubList);
+
+            pubList = NULL;
+            errMsg  = NULL;
+            double resultVal = interpretedRPN(rpnList, &pubList, &errMsg);
+            if (errMsg) {
+            	throw std::runtime_error(errMsg);
+            }
+
+            result += std::to_string(resultVal);
             pub_data["text/plain"] = result;
             publish_execution_result(execution_counter, std::move(pub_data), nl::json::object());
             nl::json jresult;

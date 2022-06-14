@@ -2,27 +2,27 @@
 #ifndef CALC_H
 #define CALC_H
 
+#include "xeus-calc/token.h"
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-  int spaced_expr(
-    const char* expr,
-    char** spaced_expression,
-    char** errMsg
-  );
-
-using publish_type = std::function<void(const std::string& name, const std::string& text)>;
-
-XEUS_CALC_API std::string parse_rpn(
-  const std::string& infix,
-  publish_type publish = [](const std::string& /*name*/, const std::string& /*text*/){}
+TokenObj *tokenized(
+  const char  *expr,
+  char       **errMsg
 );
 
-XEUS_CALC_API double compute_rpn(
-  const std::string &expr,
-  publish_type publish = [](const std::string& /*name*/, const std::string& /*text*/){}
+TokenObj *parsedRPN(
+  TokenObj  *expTokens,
+  TokenObj **pubListOut,
+  char     **errMsg
+);
+
+double interpretedRPN(
+  TokenObj  *rpnTokens,
+  TokenObj **pubListOut,
+  char     **errMsg
 );
 
 #ifdef __cplusplus

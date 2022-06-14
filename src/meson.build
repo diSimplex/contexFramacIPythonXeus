@@ -17,8 +17,9 @@ deps = [
 
 libxcalc = library(
 	'libxeus-calc',
-	'xeus_calc_interpreter.cpp',
+	'token.c',
 	'calc.c',
+	'xeus_calc_interpreter.cpp',
 	dependencies: deps,
 	install: true
 )
