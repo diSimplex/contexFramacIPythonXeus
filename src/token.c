@@ -8,8 +8,35 @@
 char *operators    = "-+/*^()";
 int   precedence[] = {10, 10, 20, 20, 30, 40, 40};
 
+  //ensures \result==\null || \fresh{Old,Here}(\result, \block_length{Here}(\result));
+  //assigns \result \from theToken;
+
+/*@
+  requires valid_read_string(theToken);
+  requires 0 <= tokenLen;
+  requires 0 <= tokenType < TOKEN_VAL+1;
+
+  behavior allocation:
+    assumes can_allocate: is_allocable(sizeof(TokenObj));
+    ensures \fresh{Old,Here}(\result, sizeof(TokenObj));
+    assigns \result;
+    assigns \result \from theToken, tokenLen, tokenType;
+    allocates \result;
+
+  behavior no_allocation:
+    assumes cannot_allocate: ¬is_allocable(sizeof(TokenObj));
+    ensures \result==\null;
+    assigns \result;
+    assigns \result \from \nothing;
+    allocates \nothing;
+
+  complete behaviors no_allocation, allocation;
+  disjoint behaviors no_allocation, allocation;
+ */
 TokenObj *newTokenObj(const char* theToken, size_t tokenLen, int tokenType) {
   TokenObj *newTObj = (TokenObj*)calloc(sizeof(TokenObj), 1);
+  if (!newTObj) return NULL;
+
   newTObj->token    = strndup(theToken, tokenLen);
   newTObj->len      = tokenLen;
   newTObj->type     = tokenType;
@@ -18,6 +45,12 @@ TokenObj *newTokenObj(const char* theToken, size_t tokenLen, int tokenType) {
   return newTObj;
 }
 
+
+#ifdef FALSE0
+
+/*
+  ensures ???
+ */
 void updatePrecedence(TokenObj *aToken) {
   if (aToken->type != TOKEN_OP ) return ;
 
@@ -53,6 +86,9 @@ char *publishPubList(TokenObj *pubList) {
   return result;
 }
 
+/*
+  ensures ???
+ */
 void freeThisTokenObj(TokenObj *aToken) {
 
 	if (aToken->token) free(aToken->token);
@@ -67,6 +103,9 @@ void freeThisTokenObj(TokenObj *aToken) {
   free((void*)aToken);
 }
 
+/*
+  ensures ???
+ */
 void freeAllTokenObjs(TokenObj *aToken) {
 	if (!aToken) return;
 
@@ -75,3 +114,4 @@ void freeAllTokenObjs(TokenObj *aToken) {
 }
 
 
+#endif
