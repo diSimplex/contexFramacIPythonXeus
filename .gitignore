@@ -1,5 +1,5 @@
 .frama-c
-ctest.h
+fctest.*
 
 .ipynb_checkpoints
 

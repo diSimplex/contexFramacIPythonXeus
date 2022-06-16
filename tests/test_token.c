@@ -1,10 +1,12 @@
-#include <stdlib.h>
-#include "ctest.h"
+#include <string.h>
+#include "fcTest.h"
+#include "xeus-calc/token.h"
 
-CTEST(suite1, test1) {
-	ASSERT_EQUAL(1,1);
+static void testNewTokenObj(FCTestCase *tc, void*) {
+  TokenObj *newTObj =  newTokenObj("aToken", strlen("aToken"), TOKEN_NIL);
+  fcTestNotNull(tc, newTObj, "the new token obj should not be NULL", FALSE);
 }
 
-CTEST(suite1, test2) {
-	ASSERT_EQUAL(1,3);
+void addTokenTests(void) {
+  fcAddTest(TRUE, "Tokens", "newTokenObj", testNewTokenObj, NULL, NULL, NULL);
 }

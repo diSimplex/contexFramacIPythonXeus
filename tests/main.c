@@ -1,13 +1,12 @@
 #include <stdio.h>
 
-#define CTEST_MAIN
+#include "fcTest.h"
 
-#define CTEST_SEGFAULT
-
-#include "ctest.h"
+void addTokenTests(void);
 
 int main(int argc, const char *argv[]) {
-  int result = ctest_main(argc, argv);
 
-  return result;
+  addTokenTests();
+
+  return fcTestRunner(argc, argv);
 }
