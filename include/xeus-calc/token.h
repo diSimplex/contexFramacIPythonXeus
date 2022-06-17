@@ -18,11 +18,11 @@ extern char *operators;
 
 typedef struct tokenObjStruct {
   int                    type;
-  char                  *token;
-	size_t                 len;
-	double                 value;
-	int                    precedence;
-	struct tokenObjStruct *next;
+  const char            *token;
+  size_t                 len;
+  double                 value;
+  int                    precedence;
+  struct tokenObjStruct *next;
 } TokenObj;
 
 TokenObj *newTokenObj(

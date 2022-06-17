@@ -13,29 +13,28 @@ int   precedence[] = {10, 10, 20, 20, 30, 40, 40};
 
 /*@
   requires valid_read_string(theToken);
-  requires 0 <= tokenLen;
+  requires 0 <= tokenLen < \block_length(theToken);
   requires 0 <= tokenType < TOKEN_VAL+1;
 
+  allocates \result;
   behavior allocation:
     assumes can_allocate: is_allocable(sizeof(TokenObj));
     ensures \fresh{Old,Here}(\result, sizeof(TokenObj));
+    ensures \result != \null;
     assigns \result;
-    assigns \result \from theToken, tokenLen, tokenType;
-    allocates \result;
+    assigns \result \from theToken, tokenLen, tokenType, __fc_heap_status;
 
   behavior no_allocation:
-    assumes cannot_allocate: ¬is_allocable(sizeof(TokenObj));
+    assumes cannot_allocate: !is_allocable(sizeof(TokenObj));
     ensures \result==\null;
-    assigns \result;
     assigns \result \from \nothing;
-    allocates \nothing;
 
   complete behaviors no_allocation, allocation;
   disjoint behaviors no_allocation, allocation;
  */
 TokenObj *newTokenObj(const char* theToken, size_t tokenLen, int tokenType) {
-  TokenObj *newTObj = (TokenObj*)calloc(sizeof(TokenObj), 1);
-  if (!newTObj) return NULL;
+  TokenObj *newTObj = (TokenObj*)calloc(1, sizeof(TokenObj));
+  if (newTObj == NULL) return NULL;
 
   newTObj->token    = strndup(theToken, tokenLen);
   newTObj->len      = tokenLen;
