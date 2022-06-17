@@ -1,8 +1,0 @@
-# This is a simple YAML file containing an ordered list of additional
-# arguments for the Frama-C command
-
-- '-rte'
-- '-eva-precision'
-- '3'
-- '-eva'
-#- '-wp'

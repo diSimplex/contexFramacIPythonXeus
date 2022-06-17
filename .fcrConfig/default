@@ -1,0 +1,15 @@
+# This is a simple YAML file containing an ordered list of additional
+# arguments and/or environment variables for the Frama-C command
+
+arguments:
+  - -rte
+  - -eva-precision
+  - 3
+  - -eva
+  #- -wp
+
+environment: {}
+
+# you can also include a list of additional source files
+srcs:
+ - $FRAMAC_SHARE/libc/string.c
