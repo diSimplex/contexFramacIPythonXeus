@@ -2,6 +2,9 @@
 #include "fcTest.h"
 #include "xeus-calc/token.h"
 
+/*@
+  requires \valid(tc);
+ */
 static void testNewTokenObj(FCTestCase *tc, void*) {
   TokenObj *nilTObj =  newTokenObj("aToken", strlen("aToken"), TOKEN_NIL);
   fcTestNotNull(tc, nilTObj, "the nil token obj should not be NULL", FALSE);
@@ -13,7 +16,7 @@ static void testNewTokenObj(FCTestCase *tc, void*) {
   fcTestNotNull(tc, valTObj, "the val token obj should not be NULL", FALSE);
 
   TokenObj *longTObj = newTokenObj("token token1", strlen("token"), TOKEN_NIL);
-  fcTestNotNull(tc, longTObj, "the long token obj should not be NULL", FALSE);
+  fcTestNotNull(tc, longTObj, "the long token obj should not be NULL", TRUE);
 }
 
 void addTokenTests(void) {

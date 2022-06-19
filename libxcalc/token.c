@@ -11,18 +11,13 @@ int   precedence[] = {10, 10, 20, 20, 30, 40, 40};
   //ensures \result==\null || \fresh{Old,Here}(\result, \block_length{Here}(\result));
   //assigns \result \from theToken;
 
-/*@
-  requires valid_read_string(theToken);
-  requires 0 <= tokenLen < \block_length(theToken);
-  requires 0 <= tokenType < TOKEN_VAL+1;
-
+/*
   allocates \result;
   behavior allocation:
     assumes can_allocate: is_allocable(sizeof(TokenObj));
     ensures \fresh{Old,Here}(\result, sizeof(TokenObj));
     ensures \result != \null;
     assigns \result;
-    assigns \result \from theToken, tokenLen, tokenType, __fc_heap_status;
 
   behavior no_allocation:
     assumes cannot_allocate: !is_allocable(sizeof(TokenObj));
@@ -32,6 +27,12 @@ int   precedence[] = {10, 10, 20, 20, 30, 40, 40};
   complete behaviors no_allocation, allocation;
   disjoint behaviors no_allocation, allocation;
  */
+ /*@
+  requires valid_read_string(theToken);
+  requires 0 <= tokenLen < \block_length(theToken);
+  requires 0 <= tokenType < TOKEN_VAL+1;
+  assigns \result \from theToken, tokenLen, tokenType, indirect:__fc_heap_status;
+  */
 TokenObj *newTokenObj(const char* theToken, size_t tokenLen, int tokenType) {
   TokenObj *newTObj = (TokenObj*)calloc(1, sizeof(TokenObj));
   if (newTObj == NULL) return NULL;
@@ -40,7 +41,8 @@ TokenObj *newTokenObj(const char* theToken, size_t tokenLen, int tokenType) {
   newTObj->len      = tokenLen;
   newTObj->type     = tokenType;
   newTObj->value    = 0;
-  if (tokenType == TOKEN_VAL) newTObj->value = atof(newTObj->token);
+  //if (tokenType == TOKEN_VAL) newTObj->value = atof(newTObj->token);
+  if (tokenType == TOKEN_VAL) newTObj->value = atof(theToken);
   return newTObj;
 }
 

@@ -2,6 +2,8 @@
 # arguments and/or environment variables for the Frama-C command
 
 arguments:
+  - -main
+  - evaMain
   - -rte
   - -eva-precision
   - 3
