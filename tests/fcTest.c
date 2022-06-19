@@ -33,8 +33,10 @@ void fcAddTest(
   fctest_setup_func     setupTest,
   fctest_teardown_func  teardownTest
 ) {
-	FCTest *newTest = calloc(sizeof(FCTest), 1);
-	newTest->next         = NULL;
+  FCTest *newTest = (FCTest*) calloc(1, sizeof(FCTest));
+  if (! newTest) return ; // we can not add this test!
+
+  newTest->next         = NULL;
   newTest->runTest      = runTest;
   newTest->suiteName    = suiteName;
   newTest->testName     = testName;
