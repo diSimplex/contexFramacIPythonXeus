@@ -2,15 +2,11 @@
 # arguments and/or environment variables for the Frama-C command
 
 arguments:
-  - -main
-  - evaMain
   - -rte
-  - -eva-precision
-  - 3
-  - -eva
+  - -wp-rte
+  - -wp
 
 environment: {}
 
 # you can also include a list of additional source files
-srcs:
- - $FRAMAC_SHARE/libc/string.c
+srcs: []
