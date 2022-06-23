@@ -4,6 +4,7 @@
 #include <stdlib.h>
 
 #include "xeus-calc/token.h"
+#include "framaCHeapFixes.h"
 
 char *operators    = "-+/*^()";
 int   precedence[] = {10, 10, 20, 20, 30, 40, 40};
@@ -34,15 +35,16 @@ int   precedence[] = {10, 10, 20, 20, 30, 40, 40};
   assigns \result \from theToken, tokenLen, tokenType, indirect:__fc_heap_status;
   */
 TokenObj *newTokenObj(const char* theToken, size_t tokenLen, int tokenType) {
-  TokenObj *newTObj = (TokenObj*)calloc(1, sizeof(TokenObj));
+  TokenObj *newTObj = TokenObjCalloc(1);
   if (newTObj == NULL) return NULL;
 
-  newTObj->token    = strndup(theToken, tokenLen);
-  newTObj->len      = tokenLen;
+  //@ assert \valid(newTObj);
   newTObj->type     = tokenType;
+  newTObj->len      = tokenLen;
   newTObj->value    = 0;
   //if (tokenType == TOKEN_VAL) newTObj->value = atof(newTObj->token);
   if (tokenType == TOKEN_VAL) newTObj->value = atof(theToken);
+  newTObj->token    = strndup(theToken, tokenLen);
   return newTObj;
 }
 
